@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -45,12 +46,19 @@ def build_ydl_options(
     audio_only: bool,
     proxy: str | None,
 ) -> dict:
+    has_ffmpeg = shutil.which("ffmpeg") is not None
+    if audio_only:
+        selected_format = "bestaudio/best"
+    else:
+        # If ffmpeg is unavailable, force single-stream format to avoid merge failure.
+        selected_format = "bv*+ba/b" if has_ffmpeg else "b"
+
     output_dir.mkdir(parents=True, exist_ok=True)
     options: dict = {
         "outtmpl": str(output_dir / "%(title).200B [%(id)s].%(ext)s"),
         "noplaylist": True,
         "merge_output_format": "mp4",
-        "format": "bestaudio/best" if audio_only else "bv*+ba/b",
+        "format": selected_format,
     }
     if cookie_file:
         options["cookiefile"] = str(cookie_file)
@@ -81,6 +89,12 @@ def download_video(
 
 def main() -> int:
     args = parse_args()
+    ffmpeg_missing = not args.audio_only and shutil.which("ffmpeg") is None
+    if ffmpeg_missing:
+        print(
+            "Warning: ffmpeg is not installed. Falling back to single-stream video format.",
+            file=sys.stderr,
+        )
     try:
         title, video_id = download_video(
             url=args.url,
@@ -90,7 +104,23 @@ def main() -> int:
             proxy=args.proxy,
         )
     except DownloadError as exc:
-        print(f"Download failed: {exc}", file=sys.stderr)
+        message = str(exc)
+        print(f"Download failed: {message}", file=sys.stderr)
+        if "Requested format is not available" in message and ffmpeg_missing:
+            print(
+                "Hint: This video may require separate video+audio streams. Install ffmpeg or use a different video.",
+                file=sys.stderr,
+            )
+        if "premium member" in message.lower() or "cookies" in message.lower():
+            print(
+                "Hint: This video may require login. Try --cookie-file to provide Bilibili cookies.",
+                file=sys.stderr,
+            )
+        if "SSL: UNEXPECTED_EOF_WHILE_READING" in message:
+            print(
+                "Hint: Network/TLS connection was interrupted. Retry later or set --proxy.",
+                file=sys.stderr,
+            )
         return 1
     except Exception as exc:  # pragma: no cover
         print(f"Unexpected error: {exc}", file=sys.stderr)
