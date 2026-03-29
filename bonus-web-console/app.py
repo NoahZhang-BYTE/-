@@ -19,18 +19,26 @@ PYTHON_BIN = Path(sys.executable)
 
 
 @dataclass
-class UiState:
-    mode: str = "q1"
+class Q1State:
+    message_input: str = ""
+    command: str = ""
+    exit_code: int | None = None
+    stdout: str = ""
+    stderr: str = ""
+    q1_output_dir: str = str(Q1_DIR / "downloads")
+    q1_cookie_file: str = ""
+    q1_proxy: str = ""
+    q1_audio_only: bool = False
+
+
+@dataclass
+class Q2State:
     message_input: str = ""
     command: str = ""
     exit_code: int | None = None
     stdout: str = ""
     stderr: str = ""
     result_preview: str = ""
-    q1_output_dir: str = str(Q1_DIR / "downloads")
-    q1_cookie_file: str = ""
-    q1_proxy: str = ""
-    q1_audio_only: bool = False
     q2_limit: str = "20"
     q2_character_name: str = "星语陪伴师"
     q2_result_file: str = str(DEFAULT_RESULT_FILE)
@@ -67,28 +75,7 @@ def read_result_preview(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def state_from_form(form: Any) -> UiState:
-    mode = (form.get("mode") or "q1").strip().lower()
-    if mode not in ("q1", "q2"):
-        mode = "q1"
-
-    return UiState(
-        mode=mode,
-        message_input=(form.get("message_input") or "").strip(),
-        q1_output_dir=(form.get("q1_output_dir") or str(Q1_DIR / "downloads")).strip(),
-        q1_cookie_file=(form.get("q1_cookie_file") or "").strip(),
-        q1_proxy=(form.get("q1_proxy") or "").strip(),
-        q1_audio_only=form.get("q1_audio_only") == "on",
-        q2_limit=(form.get("q2_limit") or "20").strip(),
-        q2_character_name=(form.get("q2_character_name") or "星语陪伴师").strip(),
-        q2_result_file=(form.get("q2_result_file") or str(DEFAULT_RESULT_FILE)).strip(),
-        q2_processed_status=(form.get("q2_processed_status") or "completed").strip(),
-        q2_mock=form.get("q2_mock") == "on",
-        q2_dry_run=form.get("q2_dry_run") == "on",
-    )
-
-
-def build_q1_command(state: UiState) -> list[str]:
+def build_q1_command(state: Q1State) -> list[str]:
     command = [
         str(PYTHON_BIN),
         str(Q1_SCRIPT),
@@ -105,7 +92,7 @@ def build_q1_command(state: UiState) -> list[str]:
     return command
 
 
-def build_q2_command(state: UiState) -> list[str]:
+def build_q2_command(state: Q2State) -> list[str]:
     limit = state.q2_limit
     try:
         limit = str(max(1, int(limit)))
@@ -133,46 +120,96 @@ def build_q2_command(state: UiState) -> list[str]:
     return command
 
 
-def build_assistant_message(state: UiState) -> str:
+def q1_assistant_message(state: Q1State) -> str:
     if state.exit_code is None:
-        return "请输入一条消息并点击发送（可选参数默认收起在下方）。"
+        return "请输入 Bilibili 视频链接并点击发送（可选参数默认折叠）。"
     if state.exit_code == 0:
-        if state.mode == "q1":
-            return "题目 1 执行成功（退出码 0）。可继续输入下一条视频链接。"
-        return "题目 2 执行成功（退出码 0）。请在下方核对 result.json 字段。"
-    return f"执行失败（退出码 {state.exit_code}）。请根据日志检查参数或网络。"
+        return "下载任务执行成功（退出码 0）。你可以继续发送下一条视频链接。"
+    return f"下载任务执行失败（退出码 {state.exit_code}）。请检查链接、网络或代理配置。"
 
 
-@app.route("/", methods=["GET", "POST"])
-def index() -> str:
-    state = UiState()
+def q2_assistant_message(state: Q2State) -> str:
+    if state.exit_code is None:
+        return "点击发送即可执行题目 2（可选参数默认折叠在下方）。"
+    if state.exit_code == 0:
+        return "任务 2 执行成功（退出码 0）。请在“运行详情”里检查日志和 result.json。"
+    if "Lost connection to MySQL server" in state.stderr or "Lost connection to MySQL server" in state.stdout:
+        return "任务 2 失败：与 MySQL 连接中断。请重试；若多次失败，稍后重连或让考官确认数据库服务状态。"
+    return f"任务 2 执行失败（退出码 {state.exit_code}）。请查看日志定位问题。"
+
+
+def q1_state_from_form(form: Any) -> Q1State:
+    return Q1State(
+        message_input=(form.get("message_input") or "").strip(),
+        q1_output_dir=(form.get("q1_output_dir") or str(Q1_DIR / "downloads")).strip(),
+        q1_cookie_file=(form.get("q1_cookie_file") or "").strip(),
+        q1_proxy=(form.get("q1_proxy") or "").strip(),
+        q1_audio_only=form.get("q1_audio_only") == "on",
+    )
+
+
+def q2_state_from_form(form: Any) -> Q2State:
+    return Q2State(
+        message_input=(form.get("message_input") or "").strip(),
+        q2_limit=(form.get("q2_limit") or "20").strip(),
+        q2_character_name=(form.get("q2_character_name") or "星语陪伴师").strip(),
+        q2_result_file=(form.get("q2_result_file") or str(DEFAULT_RESULT_FILE)).strip(),
+        q2_processed_status=(form.get("q2_processed_status") or "completed").strip(),
+        q2_mock=form.get("q2_mock") == "on",
+        q2_dry_run=form.get("q2_dry_run") == "on",
+    )
+
+
+@app.get("/")
+def home() -> str:
+    return render_template("home.html")
+
+
+@app.route("/q1", methods=["GET", "POST"])
+def q1_page() -> str:
+    state = Q1State()
 
     if request.method == "POST":
-        state = state_from_form(request.form)
-
-        if state.mode == "q1":
-            if not state.message_input:
-                state.exit_code = 1
-                state.stderr = "题目 1 需要在输入框填写 Bilibili 视频链接（必填）。"
-            else:
-                command = build_q1_command(state)
-                state.command = subprocess.list2cmdline(command)
-                code, out, err = run_command(command, cwd=ROOT_DIR)
-                state.exit_code = code
-                state.stdout = out
-                state.stderr = err
+        state = q1_state_from_form(request.form)
+        if not state.message_input:
+            state.exit_code = 1
+            state.stderr = "题目 1 需要在输入框填写 Bilibili 视频链接（必填）。"
         else:
-            command = build_q2_command(state)
+            command = build_q1_command(state)
             state.command = subprocess.list2cmdline(command)
             code, out, err = run_command(command, cwd=ROOT_DIR)
             state.exit_code = code
             state.stdout = out
             state.stderr = err
 
+    return render_template(
+        "q1.html",
+        state=state,
+        assistant_message=q1_assistant_message(state),
+    )
+
+
+@app.route("/q2", methods=["GET", "POST"])
+def q2_page() -> str:
+    state = Q2State()
+
+    if request.method == "POST":
+        state = q2_state_from_form(request.form)
+        command = build_q2_command(state)
+        state.command = subprocess.list2cmdline(command)
+        code, out, err = run_command(command, cwd=ROOT_DIR)
+        state.exit_code = code
+        state.stdout = out
+        state.stderr = err
+
     preview_path = resolve_input_path(state.q2_result_file, ROOT_DIR)
     state.result_preview = read_result_preview(preview_path)
-    assistant_message = build_assistant_message(state)
-    return render_template("index.html", state=state, assistant_message=assistant_message)
+    return render_template(
+        "q2.html",
+        state=state,
+        assistant_message=q2_assistant_message(state),
+        show_modal=state.exit_code is not None,
+    )
 
 
 if __name__ == "__main__":

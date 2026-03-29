@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>任务中心</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1c2e46;
+      --ink-soft: #486383;
+      --line: #d8e6f2;
+      --bg-a: #fff7ea;
+      --bg-b: #ebf8ff;
+      --bg-c: #f4ffe8;
+      --accent-a: #0ea08d;
+      --accent-b: #f28648;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 10%, #ffe5c6 0%, transparent 34%),
+        radial-gradient(circle at 88% 20%, #d9f5ff 0%, transparent 36%),
+        linear-gradient(140deg, var(--bg-a), var(--bg-b) 52%, var(--bg-c));
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 6vw, 44px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0.2px;
+    }
+
+    .desc {
+      margin: 0 0 22px;
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffffd3;
+      box-shadow: 0 10px 28px #244f741f;
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .go {
+      justify-self: start;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 10px 14px;
+      border-radius: 11px;
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+      box-shadow: 0 8px 18px #00000020;
+    }
+
+    @media (max-width: 820px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>任务中心</h1>
+    <p class="desc">两个任务完全分离，分别作为独立产品入口（互不干扰，方便考官单独验收）。</p>
+
+    <section class="cards">
+      <article class="card">
+        <h2>题目 1：Bilibili 下载器</h2>
+        <p>输入视频链接即可执行下载。可选参数默认收起在输入框下方（点击展开）。</p>
+        <a class="go" href="/q1">进入题目 1</a>
+      </article>
+
+      <article class="card">
+        <h2>题目 2：MySQL + GLM 流水线</h2>
+        <p>运行数据库消息处理并生成结构化 JSON。执行详情集中在同一个展开区（点链接可跳到日志或结果）。</p>
+        <a class="go" href="/q2">进入题目 2</a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

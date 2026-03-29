@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>题目1 - Bilibili 下载器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-a: #fff7ea;
+      --bg-b: #eaf8ff;
+      --bg-c: #f4ffe9;
+      --line: #d9e6f3;
+      --ink: #1c2e46;
+      --ink-soft: #486383;
+      --assistant: #ffffffd9;
+      --user: #e6fbf4;
+      --accent-a: #0ea08d;
+      --accent-b: #f28648;
+      --ok: #0f8d55;
+      --fail: #be3b24;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Noto Sans SC", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, #ffe5c6 0%, transparent 34%),
+        radial-gradient(circle at 88% 20%, #d9f5ff 0%, transparent 36%),
+        linear-gradient(140deg, var(--bg-a), var(--bg-b) 52%, var(--bg-c));
+    }
+
+    .app {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 18px 14px 22px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+      gap: 12px;
+    }
+
+    .top {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #ffffffc7;
+      box-shadow: 0 10px 26px #244f7420;
+      padding: 14px 16px;
+    }
+
+    .top h1 {
+      margin: 0;
+      font-size: clamp(22px, 4vw, 32px);
+      line-height: 1.12;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+    }
+
+    .top p {
+      margin: 8px 0 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .nav {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      text-decoration: none;
+      border: 1px solid #cfe1ef;
+      border-radius: 10px;
+      padding: 6px 10px;
+      color: #305274;
+      font-size: 13px;
+      font-weight: 700;
+      background: #f7fbff;
+    }
+
+    .chat {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #f8fcffb7;
+      padding: 14px;
+      overflow: auto;
+      min-height: 320px;
+    }
+
+    .bubble {
+      max-width: 88%;
+      border-radius: 14px;
+      padding: 12px 13px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      box-shadow: 0 6px 16px #244f7414;
+      line-height: 1.58;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .assistant { background: var(--assistant); margin-right: auto; }
+    .user { background: var(--user); margin-left: auto; }
+
+    .meta {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .status {
+      margin-top: 8px;
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .status.ok { color: var(--ok); background: #eaf8f0; border: 1px solid #c4e7d2; }
+    .status.fail { color: var(--fail); background: #fdeee9; border: 1px solid #f2c6ba; }
+
+    details.panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    details.panel > summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink-soft);
+      border-bottom: 1px dashed #d8e4f0;
+      background: #f7fbff;
+    }
+
+    details.panel pre {
+      margin: 0;
+      max-height: 260px;
+      overflow: auto;
+      padding: 10px 12px;
+      font-family: "JetBrains Mono", "Noto Sans SC", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #1a3a59;
+      background: #fcfeff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .composer {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #ffffffd6;
+      box-shadow: 0 12px 28px #244f741e;
+      padding: 12px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 64px;
+      max-height: 160px;
+      resize: vertical;
+      border: 1px solid #c9dced;
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--ink);
+      font-size: 14px;
+      font-family: "Noto Sans SC", sans-serif;
+      outline: none;
+      background: #fff;
+    }
+
+    button.send {
+      border: 0;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+      box-shadow: 0 8px 18px #00000020;
+    }
+
+    .options {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfeff;
+      overflow: hidden;
+    }
+
+    .options > summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink-soft);
+      background: #f6fbff;
+      border-bottom: 1px dashed #d8e4f0;
+    }
+
+    .opt-wrap {
+      padding: 10px 12px 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #496583;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid #c9dced;
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+
+    .checks label {
+      font-size: 12px;
+      color: #496583;
+      font-weight: 700;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    @media (max-width: 820px) {
+      .input-row { grid-template-columns: 1fr; }
+      button.send { width: 100%; }
+      .bubble { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <h1>题目 1：Bilibili 下载器</h1>
+      <p>输入框用于提交视频链接（必填）；可选参数默认折叠在下方（点击展开）。</p>
+      <nav class="nav">
+        <a href="/">返回任务中心</a>
+        <a href="/q2">切换到题目 2</a>
+      </nav>
+    </header>
+
+    <section class="chat">
+      <article class="bubble assistant">
+        <div class="meta">系统</div>
+        {{ assistant_message }}
+      </article>
+
+      {% if state.exit_code is not none %}
+        <article class="bubble user">
+          <div class="meta">你输入的链接</div>
+          {{ state.message_input if state.message_input else "（空）" }}
+        </article>
+
+        <article class="bubble assistant">
+          <div class="meta">执行反馈</div>
+          {% if state.command %}命令：{{ state.command }}{% endif %}
+          <div class="status {% if state.exit_code == 0 %}ok{% else %}fail{% endif %}">
+            退出码：{{ state.exit_code }}（0 表示成功）
+          </div>
+        </article>
+      {% endif %}
+
+      <details class="panel" open>
+        <summary>执行日志（stdout/stderr）</summary>
+        <pre>{{ state.stdout }}{% if state.stderr %}\n--- stderr ---\n{{ state.stderr }}{% endif %}</pre>
+      </details>
+    </section>
+
+    <form class="composer" method="post">
+      <div class="input-row">
+        <textarea
+          name="message_input"
+          placeholder="请输入 Bilibili 视频链接（例如：https://www.bilibili.com/video/BV...）"
+        >{{ state.message_input }}</textarea>
+        <button class="send" type="submit">发送</button>
+      </div>
+
+      <details class="options">
+        <summary>可选项（点击展开）</summary>
+        <div class="opt-wrap">
+          <div class="field">
+            <label for="q1_output_dir">下载目录（本地路径）</label>
+            <input id="q1_output_dir" name="q1_output_dir" type="text" value="{{ state.q1_output_dir }}">
+          </div>
+          <div class="field">
+            <label for="q1_cookie_file">Cookie 文件（可选）</label>
+            <input id="q1_cookie_file" name="q1_cookie_file" type="text" value="{{ state.q1_cookie_file }}">
+          </div>
+          <div class="field">
+            <label for="q1_proxy">代理地址（可选）</label>
+            <input id="q1_proxy" name="q1_proxy" type="text" value="{{ state.q1_proxy }}" placeholder="http://127.0.0.1:7890">
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" name="q1_audio_only" {% if state.q1_audio_only %}checked{% endif %}> 仅下载音频</label>
+          </div>
+        </div>
+      </details>
+    </form>
+  </main>
+</body>
+</html>
