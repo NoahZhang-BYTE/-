@@ -1,11 +1,14 @@
-# 挑战杯开发团队面试题 - 两题实现
+# Challenge Cup Interview Tasks
 
-本仓库包含两道题目的可运行实现：
+This repository contains complete implementations for both interview questions, plus a bonus frontend console.
 
-- `q1-bilibili-downloader`：Bilibili 视频下载工具
-- `q2-ai-chat-pipeline`：MySQL + GLM + result.json 自动化处理程序
+## Projects
 
-## 目录结构
+- `q1-bilibili-downloader`: Bilibili video downloader script
+- `q2-ai-chat-pipeline`: MySQL + GLM + `result.json` automation pipeline
+- `bonus-web-console`: Web UI control panel for Q1 and Q2 (bonus item)
+
+## Directory Structure
 
 ```text
 challengecup-interview/
@@ -13,25 +16,23 @@ challengecup-interview/
 │  ├─ README.md
 │  ├─ requirements.txt
 │  └─ download_bilibili.py
-└─ q2-ai-chat-pipeline/
+├─ q2-ai-chat-pipeline/
+│  ├─ README.md
+│  ├─ .env.example
+│  ├─ requirements.txt
+│  ├─ process_chat_logs.py
+│  └─ result.json
+└─ bonus-web-console/
    ├─ README.md
-   ├─ .env.example
    ├─ requirements.txt
-   └─ process_chat_logs.py
+   ├─ app.py
+   └─ templates/
+      └─ index.html
 ```
 
-## 快速开始
+## Quick Start
 
-1. 分别进入各子目录安装依赖并运行。
-2. 题2需要先配置 `.env` 中的 `GLM_API_KEY`。
-
-## GitHub 提交流程建议
-
-```bash
-git init
-git add .
-git commit -m "feat: complete challenge cup interview tasks"
-git branch -M main
-git remote add origin <your_repo_url>
-git push -u origin main
-```
+1. Create and activate Python virtual environment.
+2. Install dependencies in each subproject.
+3. Configure `.env` for Q2 (set `GLM_API_KEY`).
+4. Run scripts directly, or launch bonus web console.

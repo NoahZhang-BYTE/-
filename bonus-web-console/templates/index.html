@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Challenge Cup Control Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1b2a41;
+      --ink-soft: #2f4867;
+      --panel: #ffffffcc;
+      --line: #dbe8f4;
+      --brand-a: #0f9d8a;
+      --brand-b: #f27d42;
+      --ok: #118d57;
+      --fail: #c43d24;
+      --bg-a: #fff7e8;
+      --bg-b: #e9f7ff;
+      --bg-c: #f3ffe9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Bricolage Grotesque", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, #ffe3c2 0%, transparent 32%),
+        radial-gradient(circle at 90% 18%, #d5f5ff 0%, transparent 35%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b) 52%, var(--bg-c));
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 18px 36px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 18px;
+      animation: rise 0.55s ease forwards;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(26px, 5vw, 44px);
+      letter-spacing: 0.4px;
+      line-height: 1.05;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: 0 8px 18px #00000022;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      animation: rise 0.75s ease forwards;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 10px 30px #244f7417;
+      overflow: hidden;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .card-header {
+      padding: 18px 18px 10px;
+      border-bottom: 1px dashed var(--line);
+      background: linear-gradient(120deg, #ffffff, #f8fbff);
+    }
+
+    .card-header p {
+      margin: 8px 0 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .card-body {
+      padding: 16px 18px 18px;
+    }
+
+    .q1 {
+      grid-column: span 6;
+    }
+
+    .q2 {
+      grid-column: span 6;
+    }
+
+    .logs {
+      grid-column: span 6;
+    }
+
+    .result {
+      grid-column: span 6;
+    }
+
+    .row {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      letter-spacing: 0.2px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #c9dced;
+      border-radius: 11px;
+      padding: 12px 13px;
+      font-size: 14px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus {
+      border-color: #49a1d5;
+      box-shadow: 0 0 0 3px #64b2de2d;
+    }
+
+    .inline {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 11px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+
+    button {
+      border: 0;
+      padding: 11px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      color: #fff;
+      background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
+      box-shadow: 0 8px 18px #0000001a;
+      transition: transform 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .status {
+      margin-bottom: 8px;
+      padding: 10px 12px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .ok {
+      background: #e9f8f0;
+      color: var(--ok);
+      border: 1px solid #c5ead6;
+    }
+
+    .fail {
+      background: #feefec;
+      color: var(--fail);
+      border: 1px solid #f4c8be;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 12px;
+      border: 1px solid #d6e4f2;
+      background: #f8fbff;
+      padding: 12px;
+      max-height: 380px;
+      overflow: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #193a57;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #edf6ff;
+      border: 1px solid #cde3f5;
+      color: #2c4f6f;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .q1, .q2, .logs, .result {
+        grid-column: span 12;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h1 class="title">Challenge Cup Dev Console</h1>
+        <p class="subtitle">Unified web panel for Q1 Bilibili downloader and Q2 MySQL + GLM pipeline.</p>
+      </div>
+      <div class="badge">Bonus Frontend Console</div>
+    </section>
+
+    <section class="grid">
+      <article class="card q1">
+        <div class="card-header">
+          <h2>Q1: Bilibili Downloader</h2>
+          <p>Run the downloader without terminal commands.</p>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            <input type="hidden" name="action" value="q1">
+            <div class="row">
+              <label for="q1_url">Video URL</label>
+              <input id="q1_url" name="q1_url" type="text" value="{{ state.q1_url }}" placeholder="https://www.bilibili.com/video/BV..." required>
+            </div>
+            <div class="row">
+              <label for="q1_output_dir">Output Directory</label>
+              <input id="q1_output_dir" name="q1_output_dir" type="text" value="{{ state.q1_output_dir }}">
+            </div>
+            <div class="row">
+              <label for="q1_cookie_file">Cookie File (Optional)</label>
+              <input id="q1_cookie_file" name="q1_cookie_file" type="text" value="{{ state.q1_cookie_file }}">
+            </div>
+            <div class="row">
+              <label for="q1_proxy">Proxy (Optional)</label>
+              <input id="q1_proxy" name="q1_proxy" type="text" value="{{ state.q1_proxy }}" placeholder="http://127.0.0.1:7890">
+            </div>
+            <div class="inline">
+              <label class="checkbox">
+                <input type="checkbox" name="q1_audio_only" {% if state.q1_audio_only %}checked{% endif %}>
+                Audio Only
+              </label>
+              <button type="submit">Run Q1</button>
+            </div>
+          </form>
+        </div>
+      </article>
+
+      <article class="card q2">
+        <div class="card-header">
+          <h2>Q2: MySQL + GLM Processor</h2>
+          <p>Trigger chat log processing and structured JSON generation.</p>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            <input type="hidden" name="action" value="q2">
+            <div class="row">
+              <label for="q2_limit">Limit</label>
+              <input id="q2_limit" name="q2_limit" type="number" min="1" value="{{ state.q2_limit }}">
+            </div>
+            <div class="row">
+              <label for="q2_character_name">Character Name</label>
+              <input id="q2_character_name" name="q2_character_name" type="text" value="{{ state.q2_character_name }}">
+            </div>
+            <div class="row">
+              <label for="q2_processed_status">Processed Status</label>
+              <input id="q2_processed_status" name="q2_processed_status" type="text" value="{{ state.q2_processed_status }}">
+            </div>
+            <div class="row">
+              <label for="q2_result_file">Result File Path</label>
+              <input id="q2_result_file" name="q2_result_file" type="text" value="{{ state.q2_result_file }}">
+            </div>
+            <div class="inline">
+              <label class="checkbox">
+                <input type="checkbox" name="q2_mock" {% if state.q2_mock %}checked{% endif %}>
+                Mock Mode
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" name="q2_dry_run" {% if state.q2_dry_run %}checked{% endif %}>
+                Dry Run
+              </label>
+              <button type="submit">Run Q2</button>
+            </div>
+          </form>
+        </div>
+      </article>
+
+      <article class="card logs">
+        <div class="card-header">
+          <h2>Execution Log</h2>
+          <p>Command, exit code and stdout/stderr.</p>
+        </div>
+        <div class="card-body">
+          {% if state.exit_code is not none %}
+            <div class="status {% if state.exit_code == 0 %}ok{% else %}fail{% endif %}">
+              Exit Code: {{ state.exit_code }}
+            </div>
+          {% endif %}
+          {% if state.command %}
+            <div class="pill">{{ state.command }}</div>
+          {% endif %}
+          <pre>{{ state.stdout }}{% if state.stderr %}\n--- STDERR ---\n{{ state.stderr }}{% endif %}</pre>
+        </div>
+      </article>
+
+      <article class="card result">
+        <div class="card-header">
+          <h2>result.json Preview</h2>
+          <p>Live preview after each run.</p>
+        </div>
+        <div class="card-body">
+          <pre>{{ state.result_preview }}</pre>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
