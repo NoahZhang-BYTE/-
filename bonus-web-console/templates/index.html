@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>挑战杯开发控制台</title>
+  <title>挑战杯任务控制台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
       grid-template-columns: 1fr auto;
       gap: 20px;
       align-items: end;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       animation: rise 0.55s ease forwards;
     }
 
@@ -114,6 +114,28 @@
 
     .card-body {
       padding: 16px 18px 18px;
+    }
+
+    .guide {
+      grid-column: span 12;
+    }
+
+    .guide-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #2e4a66;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .guide-list code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      background: #edf6ff;
+      border: 1px solid #cde3f5;
+      border-radius: 8px;
+      padding: 2px 6px;
+      color: #244565;
     }
 
     .q1 { grid-column: span 6; }
@@ -244,7 +266,7 @@
     }
 
     @media (max-width: 980px) {
-      .q1, .q2, .logs, .result {
+      .guide, .q1, .q2, .logs, .result {
         grid-column: span 12;
       }
       .hero {
@@ -258,26 +280,42 @@
     <section class="hero">
       <div>
         <h1 class="title">挑战杯任务控制台</h1>
-        <p class="subtitle">一个页面统一运行题目 1 和题目 2，直接查看执行日志与结果文件。</p>
+        <p class="subtitle">一个页面统一运行题目 1 和题目 2（推荐验收顺序：左上 -> 右上 -> 左下 -> 右下）。</p>
       </div>
-      <div class="badge">加分项：前端控制台</div>
+      <div class="badge">功能验收模式</div>
     </section>
 
     <section class="grid">
+      <article class="card guide">
+        <div class="card-header">
+          <h2>考官检查指引（建议）</h2>
+          <p>按以下顺序执行，可以最快确认功能完整性。</p>
+        </div>
+        <div class="card-body">
+          <ol class="guide-list">
+            <li>题目 1 输入 Bilibili 链接后运行（成功标志：日志出现 <code>Download completed.</code>）。</li>
+            <li>题目 2 建议先勾选（模拟模式）+（仅试运行）进行联调（避免先改库）。</li>
+            <li>题目 2 切换真实模式后运行（成功标志：退出码为 0，且 <code>result.json</code> 有结构化内容）。</li>
+            <li>检查 <code>result.json</code> 每条记录是否含三个字段（character_name、mood、reply_text）。</li>
+            <li>必要时抽查数据库状态是否更新为目标值（如 <code>completed</code>，用于防重复处理）。</li>
+          </ol>
+        </div>
+      </article>
+
       <article class="card q1">
         <div class="card-header">
-          <h2>题目 1：Bilibili 下载器</h2>
+          <h2>题目 1：Bilibili 下载器（输入链接即可执行）</h2>
           <p>无需命令行，直接提交参数后执行下载。</p>
         </div>
         <div class="card-body">
           <form method="post">
             <input type="hidden" name="action" value="q1">
             <div class="row">
-              <label for="q1_url">视频链接</label>
+              <label for="q1_url">视频链接（必填）</label>
               <input id="q1_url" name="q1_url" type="text" value="{{ state.q1_url }}" placeholder="https://www.bilibili.com/video/BV..." required>
             </div>
             <div class="row">
-              <label for="q1_output_dir">下载目录</label>
+              <label for="q1_output_dir">下载目录（本地路径）</label>
               <input id="q1_output_dir" name="q1_output_dir" type="text" value="{{ state.q1_output_dir }}">
             </div>
             <div class="row">
@@ -291,7 +329,7 @@
             <div class="inline">
               <label class="checkbox">
                 <input type="checkbox" name="q1_audio_only" {% if state.q1_audio_only %}checked{% endif %}>
-                仅下载音频
+                仅下载音频（可选）
               </label>
               <button type="submit">运行题目 1</button>
             </div>
@@ -301,32 +339,32 @@
 
       <article class="card q2">
         <div class="card-header">
-          <h2>题目 2：MySQL + GLM 流水线</h2>
+          <h2>题目 2：MySQL + GLM 流水线（数据库 + 模型 + 文件）</h2>
           <p>触发数据库消息处理、生成结构化 JSON 并更新状态。</p>
         </div>
         <div class="card-body">
           <form method="post">
             <input type="hidden" name="action" value="q2">
             <div class="row">
-              <label for="q2_limit">处理条数上限</label>
+              <label for="q2_limit">处理条数上限（建议 1-20）</label>
               <input id="q2_limit" name="q2_limit" type="number" min="1" value="{{ state.q2_limit }}">
             </div>
             <div class="row">
-              <label for="q2_character_name">角色名称</label>
+              <label for="q2_character_name">角色名称（默认：星语陪伴师）</label>
               <input id="q2_character_name" name="q2_character_name" type="text" value="{{ state.q2_character_name }}">
             </div>
             <div class="row">
-              <label for="q2_processed_status">完成状态值</label>
+              <label for="q2_processed_status">完成状态值（写回数据库）</label>
               <input id="q2_processed_status" name="q2_processed_status" type="text" value="{{ state.q2_processed_status }}">
             </div>
             <div class="row">
-              <label for="q2_result_file">结果文件路径</label>
+              <label for="q2_result_file">结果文件路径（result.json）</label>
               <input id="q2_result_file" name="q2_result_file" type="text" value="{{ state.q2_result_file }}">
             </div>
             <div class="inline">
               <label class="checkbox">
                 <input type="checkbox" name="q2_mock" {% if state.q2_mock %}checked{% endif %}>
-                模拟模式
+                模拟模式（不调用真实模型）
               </label>
               <label class="checkbox">
                 <input type="checkbox" name="q2_dry_run" {% if state.q2_dry_run %}checked{% endif %}>
@@ -340,26 +378,26 @@
 
       <article class="card logs">
         <div class="card-header">
-          <h2>执行日志</h2>
-          <p>显示命令行、退出码与标准输出。</p>
+          <h2>执行日志（命令行与标准输出）</h2>
+          <p>用于核对是否正常执行及报错定位。</p>
         </div>
         <div class="card-body">
           {% if state.exit_code is not none %}
             <div class="status {% if state.exit_code == 0 %}ok{% else %}fail{% endif %}">
-              退出码：{{ state.exit_code }}
+              退出码：{{ state.exit_code }}（0 表示成功）
             </div>
           {% endif %}
           {% if state.command %}
             <div class="pill">{{ state.command }}</div>
           {% endif %}
-          <pre>{{ state.stdout }}{% if state.stderr %}\n--- 标准错误输出 ---\n{{ state.stderr }}{% endif %}</pre>
+          <pre>{{ state.stdout }}{% if state.stderr %}\n--- 标准错误输出（stderr） ---\n{{ state.stderr }}{% endif %}</pre>
         </div>
       </article>
 
       <article class="card result">
         <div class="card-header">
-          <h2>result.json 预览</h2>
-          <p>每次运行后自动刷新，便于现场演示。</p>
+          <h2>result.json 预览（结构化验收）</h2>
+          <p>每次运行后自动刷新，便于现场检查输出字段。</p>
         </div>
         <div class="card-body">
           <pre>{{ state.result_preview }}</pre>
