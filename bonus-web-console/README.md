@@ -1,37 +1,34 @@
-# Bonus - Frontend Control Console
+# 加分项 - 中文前端控制台
 
-This is a lightweight web console for bonus points.  
-It provides a single UI to run both interview tasks:
+这是一个轻量的本地 Web 控制台，用于展示加分项。  
+功能是把两道题统一到一个中文界面里操作。
 
-- Q1: Bilibili downloader
-- Q2: MySQL + GLM processing pipeline
+## 功能
 
-## Features
+- 表单触发题目 1（Bilibili 下载）
+- 表单触发题目 2（MySQL + GLM 处理）
+- 页面实时展示命令输出
+- 页面实时预览 `result.json`
 
-- Form-based controls for Q1/Q2
-- Real-time command output panel
-- `result.json` live preview
-- Mobile-friendly responsive layout
-
-## Install
+## 安装
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run
+## 启动
 
 ```bash
 python app.py
 ```
 
-Then open:
+浏览器打开：
 
 - <http://127.0.0.1:7860>
 
-## Notes
+## 说明
 
-- The app invokes existing scripts:
+- 控制台会调用已有脚本：
   - `../q1-bilibili-downloader/download_bilibili.py`
   - `../q2-ai-chat-pipeline/process_chat_logs.py`
-- For Q2 real mode, ensure `../q2-ai-chat-pipeline/.env` contains a valid `GLM_API_KEY`.
+- 若运行题目 2 真实模式，请先配置 `../q2-ai-chat-pipeline/.env` 中的 `GLM_API_KEY`。

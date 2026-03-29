@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Challenge Cup Control Console</title>
+  <title>挑战杯开发控制台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink: #1b2a41;
       --ink-soft: #2f4867;
-      --panel: #ffffffcc;
+      --panel: #ffffffcf;
       --line: #dbe8f4;
       --brand-a: #0f9d8a;
       --brand-b: #f27d42;
@@ -29,7 +29,7 @@
     body {
       margin: 0;
       color: var(--ink);
-      font-family: "Bricolage Grotesque", sans-serif;
+      font-family: "Noto Sans SC", sans-serif;
       background:
         radial-gradient(circle at 10% 10%, #ffe3c2 0%, transparent 32%),
         radial-gradient(circle at 90% 18%, #d5f5ff 0%, transparent 35%),
@@ -56,8 +56,8 @@
       margin: 0;
       font-size: clamp(26px, 5vw, 44px);
       letter-spacing: 0.4px;
-      line-height: 1.05;
-      font-weight: 800;
+      line-height: 1.06;
+      font-weight: 900;
     }
 
     .subtitle {
@@ -96,7 +96,7 @@
     .card h2 {
       margin: 0;
       font-size: 21px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: 0.2px;
     }
 
@@ -116,21 +116,10 @@
       padding: 16px 18px 18px;
     }
 
-    .q1 {
-      grid-column: span 6;
-    }
-
-    .q2 {
-      grid-column: span 6;
-    }
-
-    .logs {
-      grid-column: span 6;
-    }
-
-    .result {
-      grid-column: span 6;
-    }
+    .q1 { grid-column: span 6; }
+    .q2 { grid-column: span 6; }
+    .logs { grid-column: span 6; }
+    .result { grid-column: span 6; }
 
     .row {
       display: grid;
@@ -228,7 +217,7 @@
       padding: 12px;
       max-height: 380px;
       overflow: auto;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", "Noto Sans SC", monospace;
       font-size: 12px;
       line-height: 1.5;
       color: #193a57;
@@ -246,18 +235,12 @@
       font-size: 12px;
       font-weight: 700;
       margin-bottom: 10px;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
     }
 
     @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 980px) {
@@ -274,43 +257,43 @@
   <main class="page">
     <section class="hero">
       <div>
-        <h1 class="title">Challenge Cup Dev Console</h1>
-        <p class="subtitle">Unified web panel for Q1 Bilibili downloader and Q2 MySQL + GLM pipeline.</p>
+        <h1 class="title">挑战杯任务控制台</h1>
+        <p class="subtitle">一个页面统一运行题目 1 和题目 2，直接查看执行日志与结果文件。</p>
       </div>
-      <div class="badge">Bonus Frontend Console</div>
+      <div class="badge">加分项：前端控制台</div>
     </section>
 
     <section class="grid">
       <article class="card q1">
         <div class="card-header">
-          <h2>Q1: Bilibili Downloader</h2>
-          <p>Run the downloader without terminal commands.</p>
+          <h2>题目 1：Bilibili 下载器</h2>
+          <p>无需命令行，直接提交参数后执行下载。</p>
         </div>
         <div class="card-body">
           <form method="post">
             <input type="hidden" name="action" value="q1">
             <div class="row">
-              <label for="q1_url">Video URL</label>
+              <label for="q1_url">视频链接</label>
               <input id="q1_url" name="q1_url" type="text" value="{{ state.q1_url }}" placeholder="https://www.bilibili.com/video/BV..." required>
             </div>
             <div class="row">
-              <label for="q1_output_dir">Output Directory</label>
+              <label for="q1_output_dir">下载目录</label>
               <input id="q1_output_dir" name="q1_output_dir" type="text" value="{{ state.q1_output_dir }}">
             </div>
             <div class="row">
-              <label for="q1_cookie_file">Cookie File (Optional)</label>
+              <label for="q1_cookie_file">Cookie 文件（可选）</label>
               <input id="q1_cookie_file" name="q1_cookie_file" type="text" value="{{ state.q1_cookie_file }}">
             </div>
             <div class="row">
-              <label for="q1_proxy">Proxy (Optional)</label>
+              <label for="q1_proxy">代理地址（可选）</label>
               <input id="q1_proxy" name="q1_proxy" type="text" value="{{ state.q1_proxy }}" placeholder="http://127.0.0.1:7890">
             </div>
             <div class="inline">
               <label class="checkbox">
                 <input type="checkbox" name="q1_audio_only" {% if state.q1_audio_only %}checked{% endif %}>
-                Audio Only
+                仅下载音频
               </label>
-              <button type="submit">Run Q1</button>
+              <button type="submit">运行题目 1</button>
             </div>
           </form>
         </div>
@@ -318,38 +301,38 @@
 
       <article class="card q2">
         <div class="card-header">
-          <h2>Q2: MySQL + GLM Processor</h2>
-          <p>Trigger chat log processing and structured JSON generation.</p>
+          <h2>题目 2：MySQL + GLM 流水线</h2>
+          <p>触发数据库消息处理、生成结构化 JSON 并更新状态。</p>
         </div>
         <div class="card-body">
           <form method="post">
             <input type="hidden" name="action" value="q2">
             <div class="row">
-              <label for="q2_limit">Limit</label>
+              <label for="q2_limit">处理条数上限</label>
               <input id="q2_limit" name="q2_limit" type="number" min="1" value="{{ state.q2_limit }}">
             </div>
             <div class="row">
-              <label for="q2_character_name">Character Name</label>
+              <label for="q2_character_name">角色名称</label>
               <input id="q2_character_name" name="q2_character_name" type="text" value="{{ state.q2_character_name }}">
             </div>
             <div class="row">
-              <label for="q2_processed_status">Processed Status</label>
+              <label for="q2_processed_status">完成状态值</label>
               <input id="q2_processed_status" name="q2_processed_status" type="text" value="{{ state.q2_processed_status }}">
             </div>
             <div class="row">
-              <label for="q2_result_file">Result File Path</label>
+              <label for="q2_result_file">结果文件路径</label>
               <input id="q2_result_file" name="q2_result_file" type="text" value="{{ state.q2_result_file }}">
             </div>
             <div class="inline">
               <label class="checkbox">
                 <input type="checkbox" name="q2_mock" {% if state.q2_mock %}checked{% endif %}>
-                Mock Mode
+                模拟模式
               </label>
               <label class="checkbox">
                 <input type="checkbox" name="q2_dry_run" {% if state.q2_dry_run %}checked{% endif %}>
-                Dry Run
+                仅试运行（不回写数据库）
               </label>
-              <button type="submit">Run Q2</button>
+              <button type="submit">运行题目 2</button>
             </div>
           </form>
         </div>
@@ -357,26 +340,26 @@
 
       <article class="card logs">
         <div class="card-header">
-          <h2>Execution Log</h2>
-          <p>Command, exit code and stdout/stderr.</p>
+          <h2>执行日志</h2>
+          <p>显示命令行、退出码与标准输出。</p>
         </div>
         <div class="card-body">
           {% if state.exit_code is not none %}
             <div class="status {% if state.exit_code == 0 %}ok{% else %}fail{% endif %}">
-              Exit Code: {{ state.exit_code }}
+              退出码：{{ state.exit_code }}
             </div>
           {% endif %}
           {% if state.command %}
             <div class="pill">{{ state.command }}</div>
           {% endif %}
-          <pre>{{ state.stdout }}{% if state.stderr %}\n--- STDERR ---\n{{ state.stderr }}{% endif %}</pre>
+          <pre>{{ state.stdout }}{% if state.stderr %}\n--- 标准错误输出 ---\n{{ state.stderr }}{% endif %}</pre>
         </div>
       </article>
 
       <article class="card result">
         <div class="card-header">
-          <h2>result.json Preview</h2>
-          <p>Live preview after each run.</p>
+          <h2>result.json 预览</h2>
+          <p>每次运行后自动刷新，便于现场演示。</p>
         </div>
         <div class="card-body">
           <pre>{{ state.result_preview }}</pre>

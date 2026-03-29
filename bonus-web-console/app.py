@@ -63,7 +63,7 @@ def run_command(command: list[str], cwd: Path) -> tuple[int, str, str]:
 
 def read_result_preview(path: Path) -> str:
     if not path.exists():
-        return f"Result file not found: {path}"
+        return f"未找到结果文件：{path}"
     return path.read_text(encoding="utf-8", errors="replace")
 
 
@@ -139,7 +139,7 @@ def index() -> str:
 
         if action == "q1":
             if not state.q1_url:
-                state.stderr = "Please provide a Bilibili URL."
+                state.stderr = "请先填写 Bilibili 视频链接。"
                 state.exit_code = 1
             else:
                 command = build_q1_command(state)
