@@ -20,13 +20,13 @@ PYTHON_BIN = Path(sys.executable)
 
 @dataclass
 class UiState:
-    active_panel: str = "q1"
+    mode: str = "q1"
+    message_input: str = ""
     command: str = ""
     exit_code: int | None = None
     stdout: str = ""
     stderr: str = ""
     result_preview: str = ""
-    q1_url: str = ""
     q1_output_dir: str = str(Q1_DIR / "downloads")
     q1_cookie_file: str = ""
     q1_proxy: str = ""
@@ -67,10 +67,14 @@ def read_result_preview(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def state_from_form(form: Any, action: str) -> UiState:
+def state_from_form(form: Any) -> UiState:
+    mode = (form.get("mode") or "q1").strip().lower()
+    if mode not in ("q1", "q2"):
+        mode = "q1"
+
     return UiState(
-        active_panel=action,
-        q1_url=(form.get("q1_url") or "").strip(),
+        mode=mode,
+        message_input=(form.get("message_input") or "").strip(),
         q1_output_dir=(form.get("q1_output_dir") or str(Q1_DIR / "downloads")).strip(),
         q1_cookie_file=(form.get("q1_cookie_file") or "").strip(),
         q1_proxy=(form.get("q1_proxy") or "").strip(),
@@ -88,7 +92,7 @@ def build_q1_command(state: UiState) -> list[str]:
     command = [
         str(PYTHON_BIN),
         str(Q1_SCRIPT),
-        state.q1_url,
+        state.message_input,
         "-o",
         state.q1_output_dir,
     ]
@@ -129,18 +133,27 @@ def build_q2_command(state: UiState) -> list[str]:
     return command
 
 
+def build_assistant_message(state: UiState) -> str:
+    if state.exit_code is None:
+        return "请输入一条消息并点击发送（可选参数默认收起在下方）。"
+    if state.exit_code == 0:
+        if state.mode == "q1":
+            return "题目 1 执行成功（退出码 0）。可继续输入下一条视频链接。"
+        return "题目 2 执行成功（退出码 0）。请在下方核对 result.json 字段。"
+    return f"执行失败（退出码 {state.exit_code}）。请根据日志检查参数或网络。"
+
+
 @app.route("/", methods=["GET", "POST"])
 def index() -> str:
     state = UiState()
 
     if request.method == "POST":
-        action = request.form.get("action", "q1").strip()
-        state = state_from_form(request.form, action=action)
+        state = state_from_form(request.form)
 
-        if action == "q1":
-            if not state.q1_url:
-                state.stderr = "请先填写 Bilibili 视频链接。"
+        if state.mode == "q1":
+            if not state.message_input:
                 state.exit_code = 1
+                state.stderr = "题目 1 需要在输入框填写 Bilibili 视频链接（必填）。"
             else:
                 command = build_q1_command(state)
                 state.command = subprocess.list2cmdline(command)
@@ -148,7 +161,7 @@ def index() -> str:
                 state.exit_code = code
                 state.stdout = out
                 state.stderr = err
-        elif action == "q2":
+        else:
             command = build_q2_command(state)
             state.command = subprocess.list2cmdline(command)
             code, out, err = run_command(command, cwd=ROOT_DIR)
@@ -158,7 +171,8 @@ def index() -> str:
 
     preview_path = resolve_input_path(state.q2_result_file, ROOT_DIR)
     state.result_preview = read_result_preview(preview_path)
-    return render_template("index.html", state=state)
+    assistant_message = build_assistant_message(state)
+    return render_template("index.html", state=state, assistant_message=assistant_message)
 
 
 if __name__ == "__main__":
